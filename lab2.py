@@ -1,16 +1,20 @@
 ## make neural network
 import torch
-from torch import nn
-#import torch.nn.functional as F
-######
+import torch.nn as nn
+import torch.optim as optim
+import torch.nn.functional as F
+import torch.backends.cudnn as cudnn
+###################################
 from torchvision.datasets import CIFAR10
 from torch.utils.data import DataLoader
-#################################
+import torchvision
+import torchvision.transforms as transforms
+###################################
 import time
 ## build whatever neural network like specified in prompt
 ## kind of weird it is like an obect oriented neural net
 ## using block structure to do it 
-#############################
+####################################
 #input block
 ## have to relu and batch norm after every convolution
 ''' 
@@ -75,10 +79,20 @@ class ResNet(nn.Module):
         self.block2 = ResidualBlock(in_channels=64,out_channels=128,kernel_size=3,stride=2,padding=1)
         self.block3 = ResidualBlock(in_channels=128,out_channels=256,kernel_size=3,stride=2,padding=1)
         self.block4 = ResidualBlock(in_channels=256,out_channels=512,kernel_size=3,stride=2,padding=1)
-        self.output_layer = NotImplemented
-    def forward(self):
-        pass
-def dataLoad():
+        self.output_layer = nn.Linear(in_features= 512,out_features=10 )
+    def forward(self,x):
+        out1 = self.block1(self.input_layer(x))
+        out2 = self.block2(out1)
+        out3 = self.block3(out2)
+        out4 = self.block4(out3)
+        ret = self.output_layer(out4)
+def DataLoading():
+    '''
+    Random cropping with size 32x32 and padding 4
+    Random horizontal flipping with prob 0.5
+    Normalize eahc image's RGB with mean (0.4914,0.4822,0.4465)
+    '''
+    ### might be able to use reference code 
     pass
 def train():
     pass
