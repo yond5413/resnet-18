@@ -128,7 +128,7 @@ class ResNet(nn.Module):
         out4_b = self.block4_b(out4)
         #TODO
         print(f"prior to linear layer: {out4_b.size()}")
-        y = out4_b.view(128,-1) ## flattening
+        y = out4_b.view(out4_b.size(0),-1) ## flattening
         ret = self.output_layer(y)#out4_b)
         return ret
 '''
