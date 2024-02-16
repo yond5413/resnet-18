@@ -28,35 +28,49 @@ input->[64]
 4th block: [256->,512],[512,512]
 '''
 ## data loading + training time practically the same
-class ConvBlock(nn.Module):
+'''class ConvBlock(nn.Module):
     ### params
     def __init__(self, in_channel = 3, out_channel = 64, kernel_size = 3, stride=1, padding=1):
         super().__init__()
         self.conv = nn.Conv2d(in_channel,out_channel,kernel_size, stride,padding)
-        self.batchNorm = nn.BatchNorm2d(out_channel)        
+        self.batchNorm = nn.BatchNorm2d(out_channel)  
+        self.relu = nn.ReLU(out_channel)      
         ## batch normalization is done after every convolution
         ### and prior to each activation 
     def forward(self,x):
         out = self.conv(x)
-        out = nn.ReLU(out)
+        out = self.relu(out)#nn.ReLU(out)
         return self.batchNorm(out)
-        #return self.conv(x)#self.batchNorm(self.conv(x))
+        #return self.conv(x)#self.batchNorm(self.conv(x))'''
 #############################
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels,kernel_size, stride, padding):
         super().__init__()
         ###########
-        self.conv1 = ConvBlock(in_channels, out_channels,kernel_size, stride, padding)
-        self.conv2 = ConvBlock(out_channels, out_channels,kernel_size, stride, padding)
-        self.relu  = nn.ReLU()
+        #self.conv1 = ConvBlock(in_channels, out_channels,kernel_size, stride, padding)
+        #self.conv2 = ConvBlock(out_channels, out_channels,kernel_size, stride, padding)
+        self.conv1 = nn.Conv2d(in_channels,out_channels,kernel_size, stride,padding)
+        self.conv2 = nn.Conv2d(out_channels,out_channels,kernel_size, stride=1 ,padding=padding)
+        self.relu  = nn.ReLU(out_channels)
         self.batchNorm  = nn.BatchNorm2d(out_channels)
+        self.downsample
+        ##TODO add down smapling
+        '''
+        it will reduce dimension of the input/identity to make things not crash lol
+        '''
         #2 convolution blocks#
         ###########
+        print(f" in: {in_channels}, out: {out_channels}")
     def forward(self,x):
         identity = x
-        f = self.conv1(x)
+        out1 = self.conv1(x)
+        f = self.relu(self.batchNorm(out1))
+
+        print(f"size of tensors f: {f.size()}, identity: {identity.size()}, out1: {out1.size()}")
         h = f+identity
-        ret =self.batchNorm(self.relu(h))
+        ret =self.batchNorm(h)#self.batchNorm(self.relu(h))
+        ret = self.relu(h)
+        print(f"return from forward size: {ret.size()}")
         return ret
         ##self.conv1 then relu?
         #h = f+x
@@ -70,24 +84,45 @@ class ResNet(nn.Module):
         ###
         ''' 
         input->[64]
-        1st block: [64->64],[64,]
+        1st block: [64->64],[64,64]
         2nd block: [64->128],[128,128] [input,output]
         3rd block: [128->256],[256,256]
         4th block: [256->,512],[512,512]
         '''
-        self.input_layer = ConvBlock()
+        #(3,3) -> 3x3 
+        # stride may only impact the input layer for residuals?
+        self.input_layer = nn.Conv2d(in_channels = 3,out_channels=64,kernel_size=(3,3), stride = 1,padding=1)#ConvBlock()
         ### has default parmas ^
-        self.block1 = ResidualBlock(in_channels=64,out_channels=64,kernel_size=3,stride=1,padding=1)
-        self.block2 = ResidualBlock(in_channels=64,out_channels=128,kernel_size=3,stride=2,padding=1)
-        self.block3 = ResidualBlock(in_channels=128,out_channels=256,kernel_size=3,stride=2,padding=1)
-        self.block4 = ResidualBlock(in_channels=256,out_channels=512,kernel_size=3,stride=2,padding=1)
+        print("Resnet-18 model init")
+        self.block1 =    ResidualBlock(in_channels=64,out_channels=64,kernel_size=(3,3),stride=1,padding=1)
+        self.block1_b =  ResidualBlock(in_channels=64,out_channels=64,kernel_size=(3,3),stride=1,padding=1)
+        ##############
+        self.block2 = ResidualBlock(in_channels=64,out_channels=64,kernel_size=(3,3),stride=2,padding=1)
+        self.block2_b = ResidualBlock(in_channels=64,out_channels=128,kernel_size=(3,3),stride=2,padding=1)
+        ##############
+        self.block3 = ResidualBlock(in_channels=128,out_channels=256,kernel_size=(3,3),stride=2,padding=1)
+        self.block3_b = ResidualBlock(in_channels=256,out_channels=256,kernel_size=(3,3),stride=2,padding=1)
+        ##############
+        self.block4 = ResidualBlock(in_channels=256,out_channels=512,kernel_size=(3,3),stride=2,padding=1)
+        self.block4_b = ResidualBlock(in_channels=512,out_channels=512,kernel_size=(3,3),stride=2,padding=1)
+        ##############
         self.output_layer = nn.Linear(in_features= 512,out_features=10 )
     def forward(self,x):
         out1 = self.block1(self.input_layer(x))
-        out2 = self.block2(out1)
+        out1_b = self.block1_b(out1)
+        #TODO
+        ### need other block for the subgroups 
+        out2 = self.block2(out1_b)
+        out2_b = self.block2_b(out2)
+        #TODO
+        #####################
         out3 = self.block3(out2)
+        out3_b = self.block3_b(out3)
+        #TODO
         out4 = self.block4(out3)
-        ret = self.output_layer(out4)
+        out4_b = self.block4_b(out4)
+        #TODO
+        ret = self.output_layer(out4_b)
         return ret
 '''
 Might have to make other stuff global to compare with reference 
@@ -150,6 +185,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    print(f"device info: {device}")
     best_acc = 0  # best test accuracy
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
     ##################################
@@ -185,3 +221,7 @@ if __name__ == "__main__":
     optimizer = optim.SGD(resnet.parameters(), lr=args.lr,
                       momentum=0.9, weight_decay=5e-4)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
+    for epoch in range(start_epoch, start_epoch+20):
+        train(epoch)
+        test(epoch)
+        scheduler.step()
