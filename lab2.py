@@ -53,10 +53,13 @@ class ResidualBlock(nn.Module):
         self.conv2 = nn.Conv2d(out_channels,out_channels,kernel_size, stride=1 ,padding=padding)
         self.relu  = nn.ReLU(out_channels)
         self.batchNorm  = nn.BatchNorm2d(out_channels)
-        self.downsample
+        if stride != 1:
+            self.down_sample = nn.Conv2d(in_channels,out_channels,kernel_size=(1,1), stride=stride, padding=0)
+        else:
+            self.down_sample =None
         ##TODO add down smapling
         '''
-        it will reduce dimension of the input/identity to make things not crash lol
+        it will reduce dimension of the input/identity to make things not crash 
         '''
         #2 convolution blocks#
         ###########
@@ -65,7 +68,9 @@ class ResidualBlock(nn.Module):
         identity = x
         out1 = self.conv1(x)
         f = self.relu(self.batchNorm(out1))
-
+        if self.down_sample:    
+            print(f"\n downsampling is happening, {identity.size()}")
+            identity = self.down_sample(identity)
         print(f"size of tensors f: {f.size()}, identity: {identity.size()}, out1: {out1.size()}")
         h = f+identity
         ret =self.batchNorm(h)#self.batchNorm(self.relu(h))
@@ -116,13 +121,15 @@ class ResNet(nn.Module):
         out2_b = self.block2_b(out2)
         #TODO
         #####################
-        out3 = self.block3(out2)
+        out3 = self.block3(out2_b)
         out3_b = self.block3_b(out3)
         #TODO
-        out4 = self.block4(out3)
+        out4 = self.block4(out3_b)
         out4_b = self.block4_b(out4)
         #TODO
-        ret = self.output_layer(out4_b)
+        print(f"prior to linear layer: {out4_b.size()}")
+        y = out4_b.view(128,-1) ## flattening
+        ret = self.output_layer(y)#out4_b)
         return ret
 '''
 Might have to make other stuff global to compare with reference 
