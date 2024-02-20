@@ -80,7 +80,7 @@ class ResidualBlock(nn.Module):
         #print(f"size of tensors f: {f.size()}, identity: {identity.size()}, out1: {out1.size()}")
         h = f+identity
         ret =self.batchNorm(h)#self.batchNorm(self.relu(h))
-        ret = self.relu(h)
+        ret = self.relu(ret)#self.relu(h)
         #print(f"return from forward size: {ret.size()}")
         return ret
         ##self.conv1 then relu?
