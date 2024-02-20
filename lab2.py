@@ -74,11 +74,15 @@ class ResidualBlock(nn.Module):
         identity = x
         out1 = self.conv1(x)
         f = self.relu(self.batchNorm(out1))
+        #################
+        f = self.conv2(f)
+        #################
         if self.down_sample:    
             #print(f"\n downsampling is happening, {identity.size()}")
             identity = self.down_sample(identity)
         #print(f"size of tensors f: {f.size()}, identity: {identity.size()}, out1: {out1.size()}")
         h = f+identity
+        ###
         ret =self.batchNorm(h)#self.batchNorm(self.relu(h))
         ret = self.relu(ret)#self.relu(h)
         #print(f"return from forward size: {ret.size()}")
@@ -252,7 +256,10 @@ if __name__ == "__main__":
     optimizer = optim.SGD(resnet.parameters(), lr=args.lr,
                       momentum=0.9, weight_decay=5e-4)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
-    for epoch in range(start_epoch, start_epoch+5):
+    for epoch in range(start_epoch, start_epoch+6):
         train(epoch)
         test(epoch)
         scheduler.step()
+#### coudl take first epoch as a warm-up and do 6 epochs
+#### then compare first 5, all 6, and last 5?
+#### input performed much better without batch norm
