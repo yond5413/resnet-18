@@ -14,6 +14,12 @@ import os
 import argparse
 ###################################
 import time
+from tqdm import tqdm
+'''
+2/19 notes
+do dataloader in main function
+use tdqm lib for progress bar
+'''
 ## build whatever neural network like specified in prompt
 ## kind of weird it is like an obect oriented neural net
 ## using block structure to do it 
@@ -63,19 +69,19 @@ class ResidualBlock(nn.Module):
         '''
         #2 convolution blocks#
         ###########
-        print(f" in: {in_channels}, out: {out_channels}")
+        #print(f" in: {in_channels}, out: {out_channels}")
     def forward(self,x):
         identity = x
         out1 = self.conv1(x)
         f = self.relu(self.batchNorm(out1))
         if self.down_sample:    
-            print(f"\n downsampling is happening, {identity.size()}")
+            #print(f"\n downsampling is happening, {identity.size()}")
             identity = self.down_sample(identity)
-        print(f"size of tensors f: {f.size()}, identity: {identity.size()}, out1: {out1.size()}")
+        #print(f"size of tensors f: {f.size()}, identity: {identity.size()}, out1: {out1.size()}")
         h = f+identity
         ret =self.batchNorm(h)#self.batchNorm(self.relu(h))
         ret = self.relu(h)
-        print(f"return from forward size: {ret.size()}")
+        #print(f"return from forward size: {ret.size()}")
         return ret
         ##self.conv1 then relu?
         #h = f+x
@@ -98,7 +104,7 @@ class ResNet(nn.Module):
         # stride may only impact the input layer for residuals?
         self.input_layer = nn.Conv2d(in_channels = 3,out_channels=64,kernel_size=(3,3), stride = 1,padding=1)#ConvBlock()
         ### has default parmas ^
-        print("Resnet-18 model init")
+        #print("Resnet-18 model init")
         self.block1 =    ResidualBlock(in_channels=64,out_channels=64,kernel_size=(3,3),stride=1,padding=1)
         self.block1_b =  ResidualBlock(in_channels=64,out_channels=64,kernel_size=(3,3),stride=1,padding=1)
         ##############
@@ -127,7 +133,7 @@ class ResNet(nn.Module):
         out4 = self.block4(out3_b)
         out4_b = self.block4_b(out4)
         #TODO
-        print(f"prior to linear layer: {out4_b.size()}")
+        #print(f"prior to linear layer: {out4_b.size()}")
         y = out4_b.view(out4_b.size(0),-1) ## flattening
         ret = self.output_layer(y)#out4_b)
         return ret
@@ -135,8 +141,8 @@ class ResNet(nn.Module):
 Might have to make other stuff global to compare with reference 
 '''
 resnet = ResNet()
-
-def DataLoading():
+## Below should be Main
+def Main():
     '''
     Random cropping with size 32x32 and padding 4
     Random horizontal flipping with prob 0.5
@@ -151,7 +157,8 @@ def train(epoch):
     train_loss = 0
     correct = 0
     total = 0
-    for batch_idx, (inputs, targets) in enumerate(trainloader):
+    progress_bar = tqdm(trainloader, desc=f'Epoch {epoch}', leave=False)
+    for batch_idx, (inputs, targets) in (enumerate(progress_bar)):#enumerate(trainloader):
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
         outputs = resnet(inputs)
@@ -160,18 +167,24 @@ def train(epoch):
         optimizer.step()
 
         train_loss += loss.item()
+        
         _, predicted = outputs.max(1)
         total += targets.size(0)
         correct += predicted.eq(targets).sum().item()
         ## didn't use their progress bar
+        progress_bar.set_postfix(loss=train_loss / (batch_idx + 1), accuracy=100. * correct / total)
+    average_loss = train_loss / len(trainloader)
+    accuracy = correct / total
+    print(f'Training Loss: {average_loss:.4f}, Accuracy: {100 * accuracy:.2f}%')
 def test(epoch):
     global best_acc
     resnet.eval()
     test_loss = 0
     correct = 0
     total = 0
+    progress_bar = tqdm(testloader, desc=f'Testing for Epoch {epoch}', leave=False)
     with torch.no_grad():
-        for batch_idx, (inputs, targets) in enumerate(testloader):
+        for batch_idx, (inputs, targets) in enumerate(progress_bar):#enumerate(testloader):
             inputs, targets = inputs.to(device), targets.to(device)
             outputs = resnet(inputs)
             loss = criterion(outputs, targets)
@@ -180,15 +193,26 @@ def test(epoch):
             _, predicted = outputs.max(1)
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
+            progress_bar.set_postfix(loss=test_loss / (batch_idx + 1), accuracy=100. * correct / total)
 
+    average_loss = test_loss / len(testloader)
+    accuracy = correct / total
+    print(f'Test Loss: {average_loss:.4f}, Accuracy: {100 * accuracy:.2f}%')
 if __name__ == "__main__":
     print("hello world")
     
     ##################################
+    '''
+    -for argparser need device, cuda, data_path, dataloader workers and optimizers as str
+    - optimizers ar SGD,SGD with nesterov, Adagra, Adadelta, and Adam 
+    ---> use same default hypter params
+    '''
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
     parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
-    parser.add_argument('--resume', '-r', action='store_true',
-                        help='resume from checkpoint')
+    parser.add_argument('--device', default='cuda',type = str, help =  "device")
+    parser.add_argument('--num_workers',default= 2, type= int, help = "dataloader workers")
+    parser.add_argument('--data_path',default="./data", type= str, help = "data path")
+    parser.add_argument('--opt', default ='sgd',type = str ,help = "optimzer")
     args = parser.parse_args()
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -228,7 +252,7 @@ if __name__ == "__main__":
     optimizer = optim.SGD(resnet.parameters(), lr=args.lr,
                       momentum=0.9, weight_decay=5e-4)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
-    for epoch in range(start_epoch, start_epoch+20):
+    for epoch in range(start_epoch, start_epoch+5):
         train(epoch)
         test(epoch)
         scheduler.step()
