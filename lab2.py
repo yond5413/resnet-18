@@ -217,7 +217,7 @@ if __name__ == "__main__":
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(f"device info: {device}")
-    print(f"{torch.cuda.is_available()}")
+    print(f"CUDA available: {torch.cuda.is_available()}")
     best_acc = 0  # best test accuracy
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
     ##################################
