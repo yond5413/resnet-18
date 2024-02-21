@@ -215,7 +215,7 @@ if __name__ == "__main__":
     parser.add_argument('--opt', default ='sgd',type = str ,help = "optimzer")
     args = parser.parse_args()
 
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device = 'cuda' #if torch.cuda.is_available() else 'cpu'
     print(f"device info: {device}")
     print(f"CUDA available: {torch.cuda.is_available()}")
     best_acc = 0  # best test accuracy
