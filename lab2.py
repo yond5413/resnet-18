@@ -55,12 +55,12 @@ class ResidualBlock(nn.Module):
         ###########
         #self.conv1 = ConvBlock(in_channels, out_channels,kernel_size, stride, padding)
         #self.conv2 = ConvBlock(out_channels, out_channels,kernel_size, stride, padding)
-        self.conv1 = nn.Conv2d(in_channels,out_channels,kernel_size, stride,padding)
-        self.conv2 = nn.Conv2d(out_channels,out_channels,kernel_size, stride=1 ,padding=padding)
+        self.conv1 = nn.Conv2d(in_channels,out_channels,kernel_size, stride,padding,bias = False)
+        self.conv2 = nn.Conv2d(out_channels,out_channels,kernel_size, stride=1 ,padding=padding, bias = False)
         self.relu  = nn.ReLU(out_channels)
         self.batchNorm  = nn.BatchNorm2d(out_channels)
         if stride != 1:
-            self.down_sample = nn.Conv2d(in_channels,out_channels,kernel_size=(1,1), stride=stride, padding=0)
+            self.down_sample = nn.Conv2d(in_channels,out_channels,kernel_size=(1,1), stride=stride, padding=0, bias = False)
         else:
             self.down_sample =None
         ##TODO add down smapling
@@ -257,9 +257,11 @@ if __name__ == "__main__":
                       momentum=0.9, weight_decay=5e-4)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
     for epoch in range(start_epoch, start_epoch+6):
+        if epoch == 0:
+            print("Warm-up epoch.....")
         train(epoch)
         test(epoch)
         scheduler.step()
-#### coudl take first epoch as a warm-up and do 6 epochs
+#### could take first epoch as a warm-up and do 6 epochs
 #### then compare first 5, all 6, and last 5?
 #### input performed much better without batch norm
