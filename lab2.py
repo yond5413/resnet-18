@@ -63,13 +63,13 @@ class ResidualBlock(nn.Module):
             self.down_sample = nn.Conv2d(in_channels,out_channels,kernel_size=(1,1), stride=stride, padding=0, bias = False)
         else:
             self.down_sample =None
-        ##TODO add down smapling
+        ##TODO add down sampling
         '''
         it will reduce dimension of the input/identity to make things not crash 
         '''
         #2 convolution blocks#
         ###########
-        #print(f" in: {in_channels}, out: {out_channels}")
+       
     def forward(self,x):
         identity = x
         out1 = self.conv1(x)
@@ -78,19 +78,14 @@ class ResidualBlock(nn.Module):
         f = self.conv2(f)
         #################
         if self.down_sample:    
-            #print(f"\n downsampling is happening, {identity.size()}")
             identity = self.down_sample(identity)
+            ## should I apply relu and batch-norm here?
         #print(f"size of tensors f: {f.size()}, identity: {identity.size()}, out1: {out1.size()}")
         h = f+identity
         ###
         ret =self.batchNorm(h)#self.batchNorm(self.relu(h))
         ret = self.relu(ret)#self.relu(h)
-        #print(f"return from forward size: {ret.size()}")
         return ret
-        ##self.conv1 then relu?
-        #h = f+x
-        ## h = f + x relu'ed?
-        #return h
 ##############################
 class ResNet(nn.Module):
     def __init__(self):
@@ -139,6 +134,7 @@ class ResNet(nn.Module):
         #TODO
         #print(f"prior to linear layer: {out4_b.size()}")
         y = out4_b.view(out4_b.size(0),-1) ## flattening
+        ### is this expected for outputlayer
         ret = self.output_layer(y)#out4_b)
         return ret
 '''
@@ -221,6 +217,7 @@ if __name__ == "__main__":
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(f"device info: {device}")
+    print(f"{torch.cuda.is_available()}")
     best_acc = 0  # best test accuracy
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
     ##################################
@@ -265,3 +262,11 @@ if __name__ == "__main__":
 #### could take first epoch as a warm-up and do 6 epochs
 #### then compare first 5, all 6, and last 5?
 #### input performed much better without batch norm
+
+'''
+c1
+per batch is an iteration of an epoch
+- do accuracy per batch an the full run through, per batch
+- average accross the epoch  
+1,2,3,4,5 plus average across is fine
+'''
