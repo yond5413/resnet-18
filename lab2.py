@@ -148,16 +148,50 @@ def Main():
     Random horizontal flipping with prob 0.5
     Normalize each image's RGB with mean (0.4914,0.4822,0.4465)
     '''
-    ### might be able to use reference code 
-    pass
+    ### might be able to use reference code
+    print("welcome to the main function") 
+    parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
+    parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
+    parser.add_argument('--device', default='cuda',type = str, help =  "device")
+    parser.add_argument('--num_workers',default= 2, type= int, help = "dataloader workers")
+    parser.add_argument('--data_path',default="./data", type= str, help = "data path")
+    parser.add_argument('--opt', default ='sgd',type = str ,help = "optimzer")
+    args = parser.parse_args()
+    device = args.device 
+    #print(f'device:{device} from main ')
+    best_acc = 0  # best test accuracy
+    start_epoch = 0  # start from epoch 0 or last checkpoint epoch
+    ##################################
+    print('==> Preparing data..')
+    transform_train = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    ])
+    ##################################
+    trainset = torchvision.datasets.CIFAR10(
+    root='./data', train=True, download=True, transform=transform_train)
 
-def train(epoch):
+    trainloader = torch.utils.data.DataLoader(
+    trainset, batch_size=128, shuffle=True, num_workers=2)
+    ### will have to adjust function as the dataloaders are not global variables anymore
+    classes = ('plane', 'car', 'bird', 'cat', 'deer',
+            'dog', 'frog', 'horse', 'ship', 'truck')
+    cross_entropy = nn.CrossEntropyLoss()
+    optimizer = optimizer_selection(model= resnet, opt = args.opt, lr = args.lr)
+    ### loss same regardless
+    for epoch in range(start_epoch, start_epoch+6):
+        if epoch == 0:
+            print("Warm-up epoch.....")
+        train(epoch,cross_entropy,optimizer,device,trainloader)
+def train(epoch,criterion,optimizer,device,dataloader):
     print('\nEpoch: %d' % epoch)
     resnet.train()
     train_loss = 0
     correct = 0
     total = 0
-    progress_bar = tqdm(trainloader, desc=f'Epoch {epoch}', leave=False)
+    progress_bar = tqdm(dataloader, desc=f'Epoch {epoch}', leave=False)
     for batch_idx, (inputs, targets) in (enumerate(progress_bar)):#enumerate(trainloader):
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
@@ -173,7 +207,7 @@ def train(epoch):
         correct += predicted.eq(targets).sum().item()
         ## didn't use their progress bar
         progress_bar.set_postfix(loss=train_loss / (batch_idx + 1), accuracy=100. * correct / total)
-    average_loss = train_loss / len(trainloader)
+    average_loss = train_loss / len(dataloader)
     accuracy = correct / total
     print(f'Training Loss: {average_loss:.4f}, Accuracy: {100 * accuracy:.2f}%')
 def test(epoch):
@@ -198,67 +232,61 @@ def test(epoch):
     average_loss = test_loss / len(testloader)
     accuracy = correct / total
     print(f'Test Loss: {average_loss:.4f}, Accuracy: {100 * accuracy:.2f}%')
+
+def optimizer_selection(model, opt,lr ):
+    opt = opt.lower()
+    print(f"opt: {opt} in the selection function")
+    if opt == "sgd":
+        ret = optim.SGD(model.parameters(), lr=lr,
+                      momentum=0.9, weight_decay=5e-4, nesterov=False)
+    elif opt == "nesterov":
+        ret = optim.SGD(model.parameters(), lr=lr,
+                      momentum=0.9, weight_decay=5e-4,nesterov=True)
+    elif opt == "adadelta":
+        ret = optim.Adadelta(model.parameters(), lr=lr,
+                      momentum=0.9, weight_decay=5e-4)
+    elif opt == 'adagrad':
+        ret = optim.Adagrad(model.parameters(), lr=lr,
+                      momentum=0.9, weight_decay=5e-4)
+    elif opt == 'adam':
+        ret = optim.Adam(model.parameters(), lr=lr,
+                      momentum=0.9, weight_decay=5e-4)
+    else:
+        ### default sgd case:
+        ret = optim.SGD(model.parameters(), lr=lr,
+                      momentum=0.9, weight_decay=5e-4)
+    return ret 
+
 if __name__ == "__main__":
     print("hello world")
-    
-    ##################################
-    '''
-    -for argparser need device, cuda, data_path, dataloader workers and optimizers as str
-    - optimizers ar SGD,SGD with nesterov, Adagra, Adadelta, and Adam 
-    ---> use same default hypter params
-    '''
-    parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
-    parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
-    parser.add_argument('--device', default='cuda',type = str, help =  "device")
-    parser.add_argument('--num_workers',default= 2, type= int, help = "dataloader workers")
-    parser.add_argument('--data_path',default="./data", type= str, help = "data path")
-    parser.add_argument('--opt', default ='sgd',type = str ,help = "optimzer")
-    args = parser.parse_args()
+    Main()
 
-    device = 'cuda' #if torch.cuda.is_available() else 'cpu'
-    print(f"device info: {device}")
-    print(f"CUDA available: {torch.cuda.is_available()}")
-    best_acc = 0  # best test accuracy
-    start_epoch = 0  # start from epoch 0 or last checkpoint epoch
     ##################################
-    print('==> Preparing data..')
-    transform_train = transforms.Compose([
-        transforms.RandomCrop(32, padding=4),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-    ])
-    ##################################
-    transform_test = transforms.Compose([
+    '''transform_test = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-    ])
+    ])'''
     ##################################
     # data loader 
-    trainset = torchvision.datasets.CIFAR10(
-    root='./data', train=True, download=True, transform=transform_train)
-    
-    trainloader = torch.utils.data.DataLoader(
-        trainset, batch_size=128, shuffle=True, num_workers=2)
-
-    testset = torchvision.datasets.CIFAR10(
+    ## not releavent for this assignment (test)
+    '''testset = torchvision.datasets.CIFAR10(
         root='./data', train=False, download=True, transform=transform_test)
     testloader = torch.utils.data.DataLoader(
         testset, batch_size=100, shuffle=False, num_workers=2)
-
+    #################
     classes = ('plane', 'car', 'bird', 'cat', 'deer',
-            'dog', 'frog', 'horse', 'ship', 'truck')
+            'dog', 'frog', 'horse', 'ship', 'truck')'''
     ##################################
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(resnet.parameters(), lr=args.lr,
-                      momentum=0.9, weight_decay=5e-4)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
-    for epoch in range(start_epoch, start_epoch+6):
-        if epoch == 0:
-            print("Warm-up epoch.....")
-        train(epoch)
-        test(epoch)
-        scheduler.step()
+    #criterion = nn.CrossEntropyLoss()
+    #optimizer = optim.SGD(resnet.parameters(), lr=args.lr,
+                      #momentum=0.9, weight_decay=5e-4)
+    #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
+    #for epoch in range(start_epoch, start_epoch+6):
+    #    if epoch == 0:
+    #        print("Warm-up epoch.....")
+    #    train(epoch)
+        #test(epoch)
+        #scheduler.step()
 #### could take first epoch as a warm-up and do 6 epochs
 #### then compare first 5, all 6, and last 5?
 #### input performed much better without batch norm
@@ -269,4 +297,7 @@ per batch is an iteration of an epoch
 - do accuracy per batch an the full run through, per batch
 - average accross the epoch  
 1,2,3,4,5 plus average across is fine
+model.parameters
+model.gradients ???
+enumerate vs iterate?
 '''
