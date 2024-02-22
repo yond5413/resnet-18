@@ -171,10 +171,10 @@ def Main():
     ])
     ##################################
     trainset = torchvision.datasets.CIFAR10(
-    root='./data', train=True, download=True, transform=transform_train)
+    root=args.data_path, train=True, download=True, transform=transform_train)#root='./data', train=True, download=True, transform=transform_train)
 
     trainloader = torch.utils.data.DataLoader(
-    trainset, batch_size=128, shuffle=True, num_workers=2)
+    trainset, batch_size=128, shuffle=True, num_workers=args.num_workers)
     ### will have to adjust function as the dataloaders are not global variables anymore
     classes = ('plane', 'car', 'bird', 'cat', 'deer',
             'dog', 'frog', 'horse', 'ship', 'truck')
