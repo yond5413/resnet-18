@@ -264,7 +264,7 @@ def train(epoch,criterion,optimizer,device,dataloader):
     accuracy = correct / total
     print(f'Training Loss: {average_loss:.4f}, Accuracy: {100 * accuracy:.2f}%')
     print(f"average mini batch time:{avg_mini_batch_time}, average I/O time: {avg_io_time}")
-    print(f"mini batch time:{total_mini_batch}, I/O time: {total_io}")
+    print(f"mini batch time:{total_mini_batch}, I/O time: {total_io}\n")
     return total_epoch,total_mini_batch,total_io
 def test(epoch):
     global best_acc
