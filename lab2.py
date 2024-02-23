@@ -171,7 +171,7 @@ def Main():
     for epoch in range(start_epoch, start_epoch+6):
         if epoch == 0:
             print("Warm-up epoch.....")
-            dummy1,dummy2,dummy3= train(epoch,cross_entropy,optimizer,device,trainloader)
+            train(epoch,cross_entropy,optimizer,device,trainloader)
             epoch_time+= dummy1
             mini_batch_time+= dummy2
             io_time+= dummy3
@@ -265,7 +265,13 @@ def train(epoch,criterion,optimizer,device,dataloader):
     print(f'Training Loss: {average_loss:.4f}, Accuracy: {100 * accuracy:.2f}%')
     print(f"average mini batch time:{avg_mini_batch_time}, average I/O time: {avg_io_time}")
     print(f"mini batch time:{total_mini_batch}, I/O time: {total_io}\n")
-    return total_epoch,total_mini_batch,total_io
+    global epoch_time
+    epoch_time+= total_epoch
+    global mini_batch_time 
+    mini_batch_time +=total_mini_batch 
+    global io_time
+    io_time += total_io 
+    #return total_epoch,total_mini_batch,total_io
 def test(epoch):
     global best_acc
     resnet.eval()
