@@ -115,6 +115,7 @@ class ResNet(nn.Module):
         #print(f"prior to linear layer: {out4_b.size()}")
         y = out4_b.view(out4_b.size(0),-1) ## flattening
         ### is this expected for outputlayer
+        #print(f"output layer shape:{y.size()}, out4_b shape: {out4_b.size()}")
         ret = self.output_layer(y)#out4_b)
         return ret
 '''
@@ -160,6 +161,7 @@ def Main():
     cross_entropy = nn.CrossEntropyLoss()
     optimizer = optimizer_selection(model= resnet, opt = args.opt, lr = args.lr)
     ### loss same regardless
+    epoch_time,mini_batch_time, io_time = (0,0,0)
     for epoch in range(start_epoch, start_epoch+6):
         if epoch == 0:
             print("Warm-up epoch.....")
@@ -198,9 +200,10 @@ def train(epoch,criterion,optimizer,device,dataloader):
             progress_bar.set_postfix(loss=train_loss / (batch_idx + 1), accuracy=100. * correct / total)
             #print(f"\n minibatch :{minibatch_end-io_end}, io: {io_end-io_start}")
             mini_batch_times.append(minibatch_end-io_end)
-            io_end.append(io_end-io_start)
+            io_times.append(io_end-io_start)
         epoch_end = time.perf_counter()
-        print(f"epoch: {epoch} time:{epoch_end-epoch_start}")
+        total_epoch = epoch_end-epoch_start
+        print(f"epoch: {epoch} time:{total_epoch}")
         avg_mini_batch_time = torch.tensor(mini_batch_times).mean().item()
         avg_io_time = torch.tensor(io_times).mean().item()
     elif device == 'cuda':
@@ -233,9 +236,12 @@ def train(epoch,criterion,optimizer,device,dataloader):
             #print(f"\n minibatch :{minibatch_end-io_end}, io: {io_end-io_start}")
         torch.cuda.synchronize()## wait for kernels to finish....
         epoch_end = time.perf_counter()
-        print(f"epoch: {epoch} time:{epoch_end-epoch_start}")
+        total_epoch = epoch_end-epoch_start
+        print(f"epoch: {epoch} time:{total_epoch}")
         avg_mini_batch_time = torch.tensor(mini_batch_times).mean().item()
         avg_io_time = torch.tensor(io_times).mean().item()
+        total_io = torch.tensor(io_times).sum().item()
+        total_mini_batch = torch.tensor(mini_batch_times).sum().item()
     else:
         print("Probably entered an invalid device i.e. not (cuda/cpu)")
         train_loss = 0
@@ -243,12 +249,14 @@ def train(epoch,criterion,optimizer,device,dataloader):
         total = 1
         avg_mini_batch_time = 0
         avg_io_time = 0
+        total_epoch,total_mini_batch,total_io  =0,0,0
     #######################################################
     average_loss = train_loss / len(dataloader)
     accuracy = correct / total
     print(f'Training Loss: {average_loss:.4f}, Accuracy: {100 * accuracy:.2f}%')
     print(f"average mini batch time:{avg_mini_batch_time}, average I/O time: {avg_io_time}")
-
+    print(f"mini batch time:{total_mini_batch}, I/O time: {total_io}")
+    return total_epoch,total_mini_batch,total_io
 def test(epoch):
     global best_acc
     resnet.eval()
@@ -272,6 +280,12 @@ def test(epoch):
     accuracy = correct / total
     print(f'Test Loss: {average_loss:.4f}, Accuracy: {100 * accuracy:.2f}%')
 
+def c3():
+    pass
+def c4():
+    pass
+def q3_and_q4():
+    pass
 def optimizer_selection(model, opt,lr ):
     opt = opt.lower()
     print(f"opt: {opt} in the selection function")
@@ -295,11 +309,21 @@ def optimizer_selection(model, opt,lr ):
         ret = optim.SGD(model.parameters(), lr=lr,
                       momentum=0.9, weight_decay=5e-4)
     return ret 
-
+def c3():
+    pass
+def c4():
+    pass
+def q3_and_q4():
+    pass
 if __name__ == "__main__":
     print("hello world")
     Main()
     ##################################
+    #TODO Q3
+    ##################################
+    #TODO Q4 
+    ##################################
+
     '''transform_test = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
