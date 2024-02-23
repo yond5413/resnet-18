@@ -172,9 +172,9 @@ def Main():
         if epoch == 0:
             print("Warm-up epoch.....")
             train(epoch,cross_entropy,optimizer,device,trainloader)
-            epoch_time+= dummy1
-            mini_batch_time+= dummy2
-            io_time+= dummy3
+            #epoch_time+= dummy1
+            #mini_batch_time+= dummy2
+            #io_time+= dummy3
     print(f"Total times for epoch: {epoch_time}, mini batch computations: {mini_batch_time}, IO: {io_time}")
 def train(epoch,criterion,optimizer,device,dataloader):
     print('\nEpoch: %d' % epoch)
@@ -322,9 +322,8 @@ def c3():
     pass
 def c4():
     pass
-def q3_and_q4():
-    pass
-
+def parameters_vs_gradients():
+    print("Finding Gradients vs parameters")
 epoch_time = 0
 mini_batch_time = 0
 io_time = 0
