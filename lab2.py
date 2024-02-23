@@ -152,12 +152,13 @@ def Main():
     print("welcome to the main function") 
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
     parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
-    parser.add_argument('--device', default='cuda',type = str, help =  "device")
+    parser.add_argument('--device', default='cpu',type = str, help =  "device")
     parser.add_argument('--num_workers',default= 2, type= int, help = "dataloader workers")
     parser.add_argument('--data_path',default="./data", type= str, help = "data path")
     parser.add_argument('--opt', default ='sgd',type = str ,help = "optimzer")
     args = parser.parse_args()
-    device = args.device 
+    device = args.device
+    resnet.to(device)
     #print(f'device:{device} from main ')
     best_acc = 0  # best test accuracy
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
@@ -207,6 +208,7 @@ def train(epoch,criterion,optimizer,device,dataloader):
         correct += predicted.eq(targets).sum().item()
         ## didn't use their progress bar
         progress_bar.set_postfix(loss=train_loss / (batch_idx + 1), accuracy=100. * correct / total)
+    ## add stuff to fix cuda part
     average_loss = train_loss / len(dataloader)
     accuracy = correct / total
     print(f'Training Loss: {average_loss:.4f}, Accuracy: {100 * accuracy:.2f}%')
