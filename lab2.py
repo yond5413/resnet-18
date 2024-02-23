@@ -38,7 +38,7 @@ input->[64]
 #############################
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels,kernel_size, stride, padding):
-        super().__init__()
+        super(ResidualBlock,self).__init__()
         ###########
         #self.conv1 = ConvBlock(in_channels, out_channels,kernel_size, stride, padding)
         #self.conv2 = ConvBlock(out_channels, out_channels,kernel_size, stride, padding)
@@ -69,7 +69,7 @@ class ResidualBlock(nn.Module):
 ##############################
 class ResNet(nn.Module):
     def __init__(self):
-        super().__init__()
+        super(ResNet,self).__init__()
         ### 2 basicblocks per sub group
         ###
         ''' 
