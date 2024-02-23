@@ -15,6 +15,8 @@ import argparse
 ###################################
 import time
 from tqdm import tqdm
+###################################
+import numpy as np
 '''
 2/19 notes
 do dataloader in main function
@@ -33,21 +35,6 @@ input->[64]
 3rd block: [128->256],[256,256]
 4th block: [256->,512],[512,512]
 '''
-## data loading + training time practically the same
-'''class ConvBlock(nn.Module):
-    ### params
-    def __init__(self, in_channel = 3, out_channel = 64, kernel_size = 3, stride=1, padding=1):
-        super().__init__()
-        self.conv = nn.Conv2d(in_channel,out_channel,kernel_size, stride,padding)
-        self.batchNorm = nn.BatchNorm2d(out_channel)  
-        self.relu = nn.ReLU(out_channel)      
-        ## batch normalization is done after every convolution
-        ### and prior to each activation 
-    def forward(self,x):
-        out = self.conv(x)
-        out = self.relu(out)#nn.ReLU(out)
-        return self.batchNorm(out)
-        #return self.conv(x)#self.batchNorm(self.conv(x))'''
 #############################
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels,kernel_size, stride, padding):
@@ -62,14 +49,7 @@ class ResidualBlock(nn.Module):
         if stride != 1:
             self.down_sample = nn.Conv2d(in_channels,out_channels,kernel_size=(1,1), stride=stride, padding=0, bias = False)
         else:
-            self.down_sample =None
-        ##TODO add down sampling
-        '''
-        it will reduce dimension of the input/identity to make things not crash 
-        '''
-        #2 convolution blocks#
-        ###########
-       
+            self.down_sample =None       
     def forward(self,x):
         identity = x
         out1 = self.conv1(x)
@@ -172,11 +152,9 @@ def Main():
     ])
     ##################################
     trainset = torchvision.datasets.CIFAR10(
-    root=args.data_path, train=True, download=True, transform=transform_train)#root='./data', train=True, download=True, transform=transform_train)
-
+    root=args.data_path, train=True, download=True, transform=transform_train)
     trainloader = torch.utils.data.DataLoader(
     trainset, batch_size=128, shuffle=True, num_workers=args.num_workers)
-    ### will have to adjust function as the dataloaders are not global variables anymore
     classes = ('plane', 'car', 'bird', 'cat', 'deer',
             'dog', 'frog', 'horse', 'ship', 'truck')
     cross_entropy = nn.CrossEntropyLoss()
@@ -186,6 +164,7 @@ def Main():
         if epoch == 0:
             print("Warm-up epoch.....")
         train(epoch,cross_entropy,optimizer,device,trainloader)
+
 def train(epoch,criterion,optimizer,device,dataloader):
     print('\nEpoch: %d' % epoch)
     resnet.train()
@@ -193,25 +172,79 @@ def train(epoch,criterion,optimizer,device,dataloader):
     correct = 0
     total = 0
     progress_bar = tqdm(dataloader, desc=f'Epoch {epoch}', leave=False)
-    for batch_idx, (inputs, targets) in (enumerate(progress_bar)):#enumerate(trainloader):
-        inputs, targets = inputs.to(device), targets.to(device)
-        optimizer.zero_grad()
-        outputs = resnet(inputs)
-        loss = criterion(outputs, targets)
-        loss.backward()
-        optimizer.step()
+    mini_batch_times = []
+    io_times = []
+    if device == 'cpu':
+        epoch_start = time.perf_counter()
+        for batch_idx, (inputs, targets) in (enumerate(progress_bar)):#enumerate(trainloader):
+            
+            io_start = time.perf_counter()
+            inputs, targets = inputs.to(device), targets.to(device)
+            io_end = time.perf_counter()
+            
+            optimizer.zero_grad()
+            outputs = resnet(inputs)
+            loss = criterion(outputs, targets)
+            loss.backward()
+            optimizer.step()
 
-        train_loss += loss.item()
-        
-        _, predicted = outputs.max(1)
-        total += targets.size(0)
-        correct += predicted.eq(targets).sum().item()
-        ## didn't use their progress bar
-        progress_bar.set_postfix(loss=train_loss / (batch_idx + 1), accuracy=100. * correct / total)
-    ## add stuff to fix cuda part
+            minibatch_end = time.perf_counter()
+
+            train_loss += loss.item()
+            
+            _, predicted = outputs.max(1)
+            total += targets.size(0)
+            correct += predicted.eq(targets).sum().item()
+            progress_bar.set_postfix(loss=train_loss / (batch_idx + 1), accuracy=100. * correct / total)
+            print(f"\n minibatch :{minibatch_end-io_end}, io: {io_end-io_start}")
+        epoch_end = time.perf_counter()
+        print(f"epoch: {epoch} time:{epoch_end-epoch_start}")
+        avg_mini_batch_time = torch.tensor(mini_batch_times).mean().item()
+        avg_io_time = torch.tensor(io_times).mean().item()
+    elif device == 'cuda':
+        torch.cuda.synchronize()## wait for kernels to finish....
+        epoch_start = time.perf_counter()
+        for batch_idx, (inputs, targets) in (enumerate(progress_bar)):#enumerate(trainloader):
+            
+            torch.cuda.synchronize()## wait for kernels to finish....
+            io_start = time.perf_counter()
+            inputs, targets = inputs.to(device), targets.to(device)
+            torch.cuda.synchronize()## wait for kernels to finish....
+            io_end = time.perf_counter()
+            
+            optimizer.zero_grad()
+            outputs = resnet(inputs)
+            loss = criterion(outputs, targets)
+            loss.backward()
+            optimizer.step()
+            torch.cuda.synchronize()## wait for kernels to finish....torch.cuda.synchronize()## wait for kernels to finish....
+            minibatch_end = time.perf_counter()
+
+            train_loss += loss.item()
+            
+            _, predicted = outputs.max(1)
+            total += targets.size(0)
+            correct += predicted.eq(targets).sum().item()
+            progress_bar.set_postfix(loss=train_loss / (batch_idx + 1), accuracy=100. * correct / total)
+            print(f"\n minibatch :{minibatch_end-io_end}, io: {io_end-io_start}")
+        torch.cuda.synchronize()## wait for kernels to finish....
+        epoch_end = time.perf_counter()
+        print(f"epoch: {epoch} time:{epoch_end-epoch_start}")
+        avg_mini_batch_time = torch.tensor(mini_batch_times).mean().item()
+        avg_io_time = torch.tensor(io_times).mean().item()
+    else:
+        print("Probably entered an invalid device i.e. not (cuda/cpu)")
+        train_loss = 0
+        correct = 0
+        total = 1
+        avg_mini_batch_time = 0
+        avg_io_time = 0
+    #######################################################
     average_loss = train_loss / len(dataloader)
     accuracy = correct / total
     print(f'Training Loss: {average_loss:.4f}, Accuracy: {100 * accuracy:.2f}%')
+    print(f"average mini batch time:{avg_mini_batch_time}, average I/O time: {avg_io_time}")
+
 def test(epoch):
     global best_acc
     resnet.eval()
@@ -262,7 +295,6 @@ def optimizer_selection(model, opt,lr ):
 if __name__ == "__main__":
     print("hello world")
     Main()
-
     ##################################
     '''transform_test = transforms.Compose([
     transforms.ToTensor(),
@@ -302,4 +334,11 @@ per batch is an iteration of an epoch
 model.parameters
 model.gradients ???
 enumerate vs iterate?
+c1 fine 
+c2  makes sense
+c3 I/O is dataloader 
+c4 make sense
+c5 gpu vs cpu
+c6 just compare optimizers
+c7 remove batch norm?
 '''
