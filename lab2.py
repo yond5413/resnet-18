@@ -333,7 +333,7 @@ def parameters_vs_gradients():
     for param in resnet.parameters():
         print(f" param: {param}") 
         if param.requires_grad:
-            grad_count +=0
+            grad_count +=1
     print(f"params: {param}, grads: {grad_count}")
             
     
