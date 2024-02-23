@@ -169,14 +169,19 @@ def Main():
     io_time = 0
     ############################################                                    
     for epoch in range(start_epoch, start_epoch+6):
+        
+        train(epoch,cross_entropy,optimizer,device,trainloader)
         if epoch == 0:
             print("Warm-up epoch.....")
-        train(epoch,cross_entropy,optimizer,device,trainloader)
+            epoch_time= 0
+            mini_batch_time = 0
+            io_time = 0
+            ## ignore epoch 0 
             #epoch_time+= dummy1
             #mini_batch_time+= dummy2
             #io_time+= dummy3
     print(f"Total times for epoch: {epoch_time}, mini batch computations: {mini_batch_time}, IO: {io_time}")
-    parameters_vs_gradients()
+    
 def train(epoch,criterion,optimizer,device,dataloader):
     print('\nEpoch: %d' % epoch)
     resnet.train()
@@ -322,9 +327,16 @@ def optimizer_selection(model, opt,lr ):
 
 
 def parameters_vs_gradients():
-    for name, parameters in resnet.named_parameters():
-        print(f"name: {name}, param: {parameters}") 
     print("Finding Gradients vs parameters")
+    parma_count = len(resnet.parameters)
+    grad_count = 0
+    for param in resnet.parameters():
+        print(f" param: {param}") 
+        if param.requires_grad:
+            grad_count +=0
+    print(f"params: {param}, grads: {grad_count}")
+            
+    
 epoch_time = 0
 mini_batch_time = 0
 io_time = 0
@@ -333,6 +345,7 @@ if __name__ == "__main__":
     Main()
     ##################################
     #TODO compute gradients vs params?
+    parameters_vs_gradients()
     ##################################
 
     '''transform_test = transforms.Compose([
