@@ -16,7 +16,7 @@ import argparse
 import time
 from tqdm import tqdm
 ###################################
-import numpy as np
+
 '''
 2/19 notes
 do dataloader in main function
