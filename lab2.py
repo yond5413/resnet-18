@@ -161,7 +161,13 @@ def Main():
     cross_entropy = nn.CrossEntropyLoss()
     optimizer = optimizer_selection(model= resnet, opt = args.opt, lr = args.lr)
     ### loss same regardless
-    epoch_time,mini_batch_time, io_time = (0,0,0)
+    global epoch_time
+    epoch_time= 0
+    global mini_batch_time 
+    mini_batch_time = 0
+    global io_time
+    io_time = 0
+    ############################################                                    
     for epoch in range(start_epoch, start_epoch+6):
         if epoch == 0:
             print("Warm-up epoch.....")
@@ -283,12 +289,6 @@ def test(epoch):
     accuracy = correct / total
     print(f'Test Loss: {average_loss:.4f}, Accuracy: {100 * accuracy:.2f}%')
 
-def c3():
-    pass
-def c4():
-    pass
-def q3_and_q4():
-    pass
 def optimizer_selection(model, opt,lr ):
     opt = opt.lower()
     print(f"opt: {opt} in the selection function")
@@ -318,6 +318,10 @@ def c4():
     pass
 def q3_and_q4():
     pass
+
+epoch_time = 0
+mini_batch_time = 0
+io_time = 0
 if __name__ == "__main__":
     print("hello world")
     Main()
