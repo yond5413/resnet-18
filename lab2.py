@@ -37,7 +37,7 @@ input->[64]
 '''
 #############################
 class ResidualBlock(nn.Module):
-    def __init__(self, in_channels, out_channels,kernel_size, stride, padding):
+    def __init__(self, in_channels, out_channels,kernel_size, stride, padding, c7 = False):
         super(ResidualBlock,self).__init__()
         ###########
         #self.conv1 = ConvBlock(in_channels, out_channels,kernel_size, stride, padding)
@@ -46,6 +46,7 @@ class ResidualBlock(nn.Module):
         self.conv2 = nn.Conv2d(out_channels,out_channels,kernel_size, stride=1 ,padding=padding, bias = False)
         self.relu  = nn.ReLU(out_channels)
         self.batchNorm  = nn.BatchNorm2d(out_channels)
+        self.c7 = c7
         if stride != 1:
             self.down_sample = nn.Conv2d(in_channels,out_channels,kernel_size=(1,1), stride=stride, padding=0, bias = False)
         else:
@@ -53,7 +54,10 @@ class ResidualBlock(nn.Module):
     def forward(self,x):
         identity = x
         out1 = self.conv1(x)
-        f = self.relu(self.batchNorm(out1))
+        if self.c7== False:
+            f = self.relu(self.batchNorm(out1))
+        else:
+            f = self.relu(out1)
         #################
         f = self.conv2(f)
         #################
@@ -63,12 +67,13 @@ class ResidualBlock(nn.Module):
         #print(f"size of tensors f: {f.size()}, identity: {identity.size()}, out1: {out1.size()}")
         h = f+identity
         ###
-        ret =self.batchNorm(h)#self.batchNorm(self.relu(h))
+        if self.c7 == False: 
+            ret =self.batchNorm(h)#self.batchNorm(self.relu(h))
         ret = self.relu(ret)#self.relu(h)
         return ret
 ##############################
-class ResNet(nn.Module):
-    def __init__(self):
+class ResNet(nn.Module,):
+    def __init__(self,c7 = False):
         super(ResNet,self).__init__()
         ### 2 basicblocks per sub group
         ###
@@ -79,22 +84,23 @@ class ResNet(nn.Module):
         3rd block: [128->256],[256,256]
         4th block: [256->,512],[512,512]
         '''
+        self.c7 = c7
         #(3,3) -> 3x3 
         # stride may only impact the input layer for residuals?
         self.input_layer = nn.Conv2d(in_channels = 3,out_channels=64,kernel_size=(3,3), stride = 1,padding=1)#ConvBlock()
         ### has default parmas ^
         #print("Resnet-18 model init")
-        self.block1 =    ResidualBlock(in_channels=64,out_channels=64,kernel_size=(3,3),stride=1,padding=1)
-        self.block1_b =  ResidualBlock(in_channels=64,out_channels=64,kernel_size=(3,3),stride=1,padding=1)
+        self.block1 =    ResidualBlock(in_channels=64,out_channels=64,kernel_size=(3,3),stride=1,padding=1,c7 = c7)
+        self.block1_b =  ResidualBlock(in_channels=64,out_channels=64,kernel_size=(3,3),stride=1,padding=1,c7 = c7)
         ##############
-        self.block2 = ResidualBlock(in_channels=64,out_channels=64,kernel_size=(3,3),stride=2,padding=1)
-        self.block2_b = ResidualBlock(in_channels=64,out_channels=128,kernel_size=(3,3),stride=2,padding=1)
+        self.block2 = ResidualBlock(in_channels=64,out_channels=64,kernel_size=(3,3),stride=2,padding=1,c7 = c7)
+        self.block2_b = ResidualBlock(in_channels=64,out_channels=128,kernel_size=(3,3),stride=2,padding=1,c7 = c7)
         ##############
-        self.block3 = ResidualBlock(in_channels=128,out_channels=256,kernel_size=(3,3),stride=2,padding=1)
-        self.block3_b = ResidualBlock(in_channels=256,out_channels=256,kernel_size=(3,3),stride=2,padding=1)
+        self.block3 = ResidualBlock(in_channels=128,out_channels=256,kernel_size=(3,3),stride=2,padding=1,c7 = c7)
+        self.block3_b = ResidualBlock(in_channels=256,out_channels=256,kernel_size=(3,3),stride=2,padding=1,c7 = c7)
         ##############
-        self.block4 = ResidualBlock(in_channels=256,out_channels=512,kernel_size=(3,3),stride=2,padding=1)
-        self.block4_b = ResidualBlock(in_channels=512,out_channels=512,kernel_size=(3,3),stride=2,padding=1)
+        self.block4 = ResidualBlock(in_channels=256,out_channels=512,kernel_size=(3,3),stride=2,padding=1,c7 = c7)
+        self.block4_b = ResidualBlock(in_channels=512,out_channels=512,kernel_size=(3,3),stride=2,padding=1,c7 = c7)
         ##############
         self.output_layer = nn.Linear(in_features= 512,out_features=10 )
     def forward(self,x):
@@ -137,6 +143,7 @@ def Main():
     parser.add_argument('--num_workers',default= 2, type= int, help = "dataloader workers")
     parser.add_argument('--data_path',default="./data", type= str, help = "data path")
     parser.add_argument('--opt', default ='sgd',type = str ,help = "optimzer")
+    parser.add_argument('--c7', default=False,type= bool,help ="Question c7")
     args = parser.parse_args()
     device = args.device
     resnet.to(device)
@@ -332,10 +339,6 @@ def parameters_vs_gradients():
     print("Finding Gradients vs parameters")
     param_count =[p for p in resnet.parameters()] #len(resnet.parameters())
     grad_count = [p for p in resnet.parameters() if p.requires_grad]
-    #for param in resnet.parameters():
-    #    print(f" param: {param}") 
-    #    if param.requires_grad:
-    #        grad_count +=1
     print(f"params: {param_count}, grads: {grad_count}")
             
     
