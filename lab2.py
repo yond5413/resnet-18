@@ -176,6 +176,7 @@ def Main():
             #mini_batch_time+= dummy2
             #io_time+= dummy3
     print(f"Total times for epoch: {epoch_time}, mini batch computations: {mini_batch_time}, IO: {io_time}")
+    parameters_vs_gradients()
 def train(epoch,criterion,optimizer,device,dataloader):
     print('\nEpoch: %d' % epoch)
     resnet.train()
@@ -318,10 +319,8 @@ def optimizer_selection(model, opt,lr ):
         ret = optim.SGD(model.parameters(), lr=lr,
                       momentum=0.9, weight_decay=5e-4)
     return ret 
-def c3():
-    pass
-def c4():
-    pass
+
+
 def parameters_vs_gradients():
     for name, parameters in resnet.named_parameters():
         print(f"name: {name}, param: {parameters}") 
@@ -333,9 +332,7 @@ if __name__ == "__main__":
     print("hello world")
     Main()
     ##################################
-    #TODO Q3
-    ##################################
-    #TODO Q4 
+    #TODO compute gradients vs params?
     ##################################
 
     '''transform_test = transforms.Compose([
