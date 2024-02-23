@@ -283,10 +283,10 @@ def optimizer_selection(model, opt,lr ):
                       momentum=0.9, weight_decay=5e-4,nesterov=True)
     elif opt == "adadelta":
         ret = optim.Adadelta(model.parameters(), lr=lr,
-                      momentum=0.9, weight_decay=5e-4)
+                      weight_decay=5e-4)
     elif opt == 'adagrad':
         ret = optim.Adagrad(model.parameters(), lr=lr,
-                      momentum=0.9, weight_decay=5e-4)
+                    weight_decay=5e-4)
     elif opt == 'adam':
         ret = optim.Adam(model.parameters(), lr=lr,
                       weight_decay=5e-4)
