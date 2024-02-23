@@ -330,13 +330,13 @@ def optimizer_selection(model, opt,lr ):
 
 def parameters_vs_gradients():
     print("Finding Gradients vs parameters")
-    parma_count = len(resnet.parameters())
-    grad_count = 0
-    for param in resnet.parameters():
-        print(f" param: {param}") 
-        if param.requires_grad:
-            grad_count +=1
-    print(f"params: {param}, grads: {grad_count}")
+    parma_count =[p for p in resnet.parameters()] #len(resnet.parameters())
+    grad_count = [p for p in resnet.parameters() if p.requires_grad]
+    #for param in resnet.parameters():
+    #    print(f" param: {param}") 
+    #    if param.requires_grad:
+    #        grad_count +=1
+    #print(f"params: {param}, grads: {grad_count}")
             
     
 epoch_time = 0
