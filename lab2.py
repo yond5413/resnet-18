@@ -226,7 +226,7 @@ def train(epoch,criterion,optimizer,device,dataloader):
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
             progress_bar.set_postfix(loss=train_loss / (batch_idx + 1), accuracy=100. * correct / total)
-            print(f"\n minibatch :{minibatch_end-io_end}, io: {io_end-io_start}")
+            #print(f"\n minibatch :{minibatch_end-io_end}, io: {io_end-io_start}")
         torch.cuda.synchronize()## wait for kernels to finish....
         epoch_end = time.perf_counter()
         print(f"epoch: {epoch} time:{epoch_end-epoch_start}")
