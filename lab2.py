@@ -221,6 +221,8 @@ def train(epoch,criterion,optimizer,device,dataloader):
         print(f"epoch: {epoch} time:{total_epoch}")
         avg_mini_batch_time = torch.tensor(mini_batch_times).mean().item()
         avg_io_time = torch.tensor(io_times).mean().item()
+        total_io = torch.tensor(io_times).sum().item()
+        total_mini_batch = torch.tensor(mini_batch_times).sum().item()
     elif device == 'cuda':
         torch.cuda.synchronize()## wait for kernels to finish....
         epoch_start = time.perf_counter()
