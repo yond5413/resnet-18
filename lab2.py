@@ -339,14 +339,13 @@ def parameters_vs_gradients():
     print("Finding Gradients vs parameters")
     param_count =[p for p in resnet.parameters()] #len(resnet.parameters())
     grad_count = [p for p in resnet.parameters() if p.requires_grad]
-    print(f"params: {param_count}, grads: {grad_count}")
+    print(f"params: {len(param_count)}, grads: {len(grad_count)}")
             
     
 epoch_time = 0
 mini_batch_time = 0
 io_time = 0
 if __name__ == "__main__":
-    print("hello world")
     Main()
     ##################################
     #TODO compute gradients vs params?
