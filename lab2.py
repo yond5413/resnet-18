@@ -169,7 +169,7 @@ def Main():
             epoch_time+= dummy1
             mini_batch_time+= dummy2
             io_time+= dummy3
-    print(f"Total times for epoch: {epoch_time}, mini batch computations:{mini_batch_time},IO:{io_time}")
+    print(f"Total times for epoch: {epoch_time}, mini batch computations: {mini_batch_time}, IO: {io_time}")
 def train(epoch,criterion,optimizer,device,dataloader):
     print('\nEpoch: %d' % epoch)
     resnet.train()
