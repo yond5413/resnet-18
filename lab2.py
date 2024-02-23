@@ -165,7 +165,10 @@ def Main():
     for epoch in range(start_epoch, start_epoch+6):
         if epoch == 0:
             print("Warm-up epoch.....")
-            epoch_time,mini_batch_time, io_time += train(epoch,cross_entropy,optimizer,device,trainloader)
+            dummy1,dummy2,dummy3= train(epoch,cross_entropy,optimizer,device,trainloader)
+            epoch_time+= dummy1
+            mini_batch_time+= dummy2
+            io_time+= dummy3
     print(f"Total times for epoch: {epoch_time}, mini batch computations:{mini_batch_time},IO:{io_time}")
 def train(epoch,criterion,optimizer,device,dataloader):
     print('\nEpoch: %d' % epoch)
