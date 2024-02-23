@@ -165,8 +165,8 @@ def Main():
     for epoch in range(start_epoch, start_epoch+6):
         if epoch == 0:
             print("Warm-up epoch.....")
-        train(epoch,cross_entropy,optimizer,device,trainloader)
-
+            epoch_time,mini_batch_time, io_time += train(epoch,cross_entropy,optimizer,device,trainloader)
+    print(f"Total times for epoch: {epoch_time}, mini batch computations:{mini_batch_time},IO:{io_time}")
 def train(epoch,criterion,optimizer,device,dataloader):
     print('\nEpoch: %d' % epoch)
     resnet.train()
