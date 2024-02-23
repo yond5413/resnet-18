@@ -330,7 +330,7 @@ def optimizer_selection(model, opt,lr ):
 
 def parameters_vs_gradients():
     print("Finding Gradients vs parameters")
-    parma_count =[p for p in resnet.parameters()] #len(resnet.parameters())
+    param_count =[p for p in resnet.parameters()] #len(resnet.parameters())
     grad_count = [p for p in resnet.parameters() if p.requires_grad]
     #for param in resnet.parameters():
     #    print(f" param: {param}") 
