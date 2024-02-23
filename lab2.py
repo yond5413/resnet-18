@@ -171,7 +171,7 @@ def Main():
     for epoch in range(start_epoch, start_epoch+6):
         if epoch == 0:
             print("Warm-up epoch.....")
-            train(epoch,cross_entropy,optimizer,device,trainloader)
+        train(epoch,cross_entropy,optimizer,device,trainloader)
             #epoch_time+= dummy1
             #mini_batch_time+= dummy2
             #io_time+= dummy3
@@ -323,6 +323,7 @@ def c3():
 def c4():
     pass
 def parameters_vs_gradients():
+    for 
     print("Finding Gradients vs parameters")
 epoch_time = 0
 mini_batch_time = 0
