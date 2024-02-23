@@ -197,6 +197,8 @@ def train(epoch,criterion,optimizer,device,dataloader):
             correct += predicted.eq(targets).sum().item()
             progress_bar.set_postfix(loss=train_loss / (batch_idx + 1), accuracy=100. * correct / total)
             #print(f"\n minibatch :{minibatch_end-io_end}, io: {io_end-io_start}")
+            mini_batch_times.append(minibatch_end-io_end)
+            io_end.append(io_end-io_start)
         epoch_end = time.perf_counter()
         print(f"epoch: {epoch} time:{epoch_end-epoch_start}")
         avg_mini_batch_time = torch.tensor(mini_batch_times).mean().item()
@@ -226,6 +228,8 @@ def train(epoch,criterion,optimizer,device,dataloader):
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
             progress_bar.set_postfix(loss=train_loss / (batch_idx + 1), accuracy=100. * correct / total)
+            mini_batch_times.append(minibatch_end-io_end)
+            io_end.append(io_end-io_start)
             #print(f"\n minibatch :{minibatch_end-io_end}, io: {io_end-io_start}")
         torch.cuda.synchronize()## wait for kernels to finish....
         epoch_end = time.perf_counter()
@@ -285,7 +289,7 @@ def optimizer_selection(model, opt,lr ):
                       momentum=0.9, weight_decay=5e-4)
     elif opt == 'adam':
         ret = optim.Adam(model.parameters(), lr=lr,
-                      momentum=0.9, weight_decay=5e-4)
+                      weight_decay=5e-4)
     else:
         ### default sgd case:
         ret = optim.SGD(model.parameters(), lr=lr,
