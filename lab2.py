@@ -323,7 +323,8 @@ def c3():
 def c4():
     pass
 def parameters_vs_gradients():
-    for 
+    for name, parameters in resnet.named_parameters():
+        print(f"name: {name}, param: {parameters}") 
     print("Finding Gradients vs parameters")
 epoch_time = 0
 mini_batch_time = 0
