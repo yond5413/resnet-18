@@ -16,32 +16,10 @@ import argparse
 import time
 from tqdm import tqdm
 ###################################
-
-'''
-2/19 notes
-do dataloader in main function
-use tdqm lib for progress bar
-'''
-## build whatever neural network like specified in prompt
-## kind of weird it is like an obect oriented neural net
-## using block structure to do it 
-####################################
-#input block
-## have to relu and batch norm after every convolution
-''' 
-input->[64]
-1st block: [64->64],[64,64]
-2nd block: [64->128],[128,128] [input,output]
-3rd block: [128->256],[256,256]
-4th block: [256->,512],[512,512]
-'''
 #############################
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels,kernel_size, stride, padding, c7 = False):
         super(ResidualBlock,self).__init__()
-        ###########
-        #self.conv1 = ConvBlock(in_channels, out_channels,kernel_size, stride, padding)
-        #self.conv2 = ConvBlock(out_channels, out_channels,kernel_size, stride, padding)
         self.conv1 = nn.Conv2d(in_channels,out_channels,kernel_size, stride,padding,bias = False)
         self.conv2 = nn.Conv2d(out_channels,out_channels,kernel_size, stride=1 ,padding=padding, bias = False)
         self.relu  = nn.ReLU(out_channels)
@@ -124,11 +102,7 @@ class ResNet(nn.Module,):
         #print(f"output layer shape:{y.size()}, out4_b shape: {out4_b.size()}")
         ret = self.output_layer(y)#out4_b)
         return ret
-'''
-Might have to make other stuff global to compare with reference 
-'''
-#resnet = ResNet()
-## Below should be Main
+
 def Main():
     '''
     Random cropping with size 32x32 and padding 4
@@ -333,52 +307,3 @@ mini_batch_time = 0
 io_time = 0
 if __name__ == "__main__":
     Main()
-    ##################################
-    ##################################
-
-    '''transform_test = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-    ])'''
-    ##################################
-    # data loader 
-    ## not releavent for this assignment (test)
-    '''testset = torchvision.datasets.CIFAR10(
-        root='./data', train=False, download=True, transform=transform_test)
-    testloader = torch.utils.data.DataLoader(
-        testset, batch_size=100, shuffle=False, num_workers=2)
-    #################
-    classes = ('plane', 'car', 'bird', 'cat', 'deer',
-            'dog', 'frog', 'horse', 'ship', 'truck')'''
-    ##################################
-    #criterion = nn.CrossEntropyLoss()
-    #optimizer = optim.SGD(resnet.parameters(), lr=args.lr,
-                      #momentum=0.9, weight_decay=5e-4)
-    #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
-    #for epoch in range(start_epoch, start_epoch+6):
-    #    if epoch == 0:
-    #        print("Warm-up epoch.....")
-    #    train(epoch)
-        #test(epoch)
-        #scheduler.step()
-#### could take first epoch as a warm-up and do 6 epochs
-#### then compare first 5, all 6, and last 5?
-#### input performed much better without batch norm
-
-'''
-c1
-per batch is an iteration of an epoch
-- do accuracy per batch an the full run through, per batch
-- average accross the epoch  
-1,2,3,4,5 plus average across is fine
-model.parameters
-model.gradients ???
-enumerate vs iterate?
-c1 fine 
-c2  makes sense
-c3 I/O is dataloader 
-c4 make sense
-c5 gpu vs cpu
-c6 just compare optimizers
-c7 remove batch norm?
-'''
