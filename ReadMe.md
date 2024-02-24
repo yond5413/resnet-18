@@ -14,3 +14,4 @@ To execute the program run python lab2.py with default parameters
     --data_path (default ./data) (str) specfies the irectory dataset will be downloaded
     --opt (default sgd) (str) provides option to choose optimizer among SGD, Nesterov, ADAM, Adagrad, adadelta
     --c7 (default False) (bool) runs resnet-18 without batchnormalization when set to True
+Finally the ploting.py is just for the figure in my report.
