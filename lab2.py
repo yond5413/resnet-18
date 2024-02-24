@@ -69,7 +69,7 @@ class ResidualBlock(nn.Module):
         ###
         if self.c7 == False: 
             ret =self.batchNorm(h)#self.batchNorm(self.relu(h))
-        ret = self.relu(ret)#self.relu(h)
+        ret = self.relu(h) #self.relu(ret)#self.relu(h)
         return ret
 ##############################
 class ResNet(nn.Module,):
