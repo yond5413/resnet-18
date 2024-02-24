@@ -127,7 +127,7 @@ class ResNet(nn.Module,):
 '''
 Might have to make other stuff global to compare with reference 
 '''
-resnet = ResNet()
+#resnet = ResNet()
 ## Below should be Main
 def Main():
     '''
@@ -146,7 +146,14 @@ def Main():
     parser.add_argument('--c7', default=False,type= bool,help ="Question c7")
     args = parser.parse_args()
     device = args.device
-    resnet.to(device)
+    
+    #resnet.to(device)
+    if args.c7:
+        print("question c7")
+        model = ResNet(c7= args.c7)
+    else:
+        model = ResNet()
+    model.to(device)
     #print(f'device:{device} from main ')
     best_acc = 0  # best test accuracy
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
@@ -166,7 +173,7 @@ def Main():
     classes = ('plane', 'car', 'bird', 'cat', 'deer',
             'dog', 'frog', 'horse', 'ship', 'truck')
     cross_entropy = nn.CrossEntropyLoss()
-    optimizer = optimizer_selection(model= resnet, opt = args.opt, lr = args.lr)
+    optimizer = optimizer_selection(model= model, opt = args.opt, lr = args.lr)
     ### loss same regardless
     global epoch_time
     epoch_time= 0
@@ -177,7 +184,7 @@ def Main():
     ############################################                                    
     for epoch in range(start_epoch, start_epoch+6):
         
-        train(epoch,cross_entropy,optimizer,device,trainloader)
+        train(model,epoch,cross_entropy,optimizer,device,trainloader)
         if epoch == 0:
             print("Warm-up epoch.....")
             epoch_time= 0
@@ -187,11 +194,12 @@ def Main():
             #epoch_time+= dummy1
             #mini_batch_time+= dummy2
             #io_time+= dummy3
-    print(f"Total times for epoch: {epoch_time}, mini batch computations: {mini_batch_time}, IO: {io_time}")
+    print(f"Total times for epoch: {epoch_time} sec, mini batch computations: {mini_batch_time} sec, IO: {io_time} sec")
     print(f"Number of workers: {args.num_workers}")
-def train(epoch,criterion,optimizer,device,dataloader):
+    parameters_vs_gradients(model)
+def train(model,epoch,criterion,optimizer,device,dataloader):
     print('\nEpoch: %d' % epoch)
-    resnet.train()
+    model.train()#resnet.train()
     train_loss = 0
     correct = 0
     total = 0
@@ -207,7 +215,7 @@ def train(epoch,criterion,optimizer,device,dataloader):
             io_end = time.perf_counter()
             
             optimizer.zero_grad()
-            outputs = resnet(inputs)
+            outputs = model(inputs)#resnet(inputs)
             loss = criterion(outputs, targets)
             loss.backward()
             optimizer.step()
@@ -225,7 +233,7 @@ def train(epoch,criterion,optimizer,device,dataloader):
             io_times.append(io_end-io_start)
         epoch_end = time.perf_counter()
         total_epoch = epoch_end-epoch_start
-        print(f"epoch: {epoch} time:{total_epoch}")
+        print(f"epoch: {epoch} time:{total_epoch} sec")
         avg_mini_batch_time = torch.tensor(mini_batch_times).mean().item()
         avg_io_time = torch.tensor(io_times).mean().item()
         total_io = torch.tensor(io_times).sum().item()
@@ -242,7 +250,7 @@ def train(epoch,criterion,optimizer,device,dataloader):
             io_end = time.perf_counter()
             
             optimizer.zero_grad()
-            outputs = resnet(inputs)
+            outputs = model(inputs)
             loss = criterion(outputs, targets)
             loss.backward()
             optimizer.step()
@@ -261,7 +269,7 @@ def train(epoch,criterion,optimizer,device,dataloader):
         torch.cuda.synchronize()## wait for kernels to finish....
         epoch_end = time.perf_counter()
         total_epoch = epoch_end-epoch_start
-        print(f"epoch: {epoch} time:{total_epoch}")
+        print(f"epoch: {epoch} time:{total_epoch} sec")
         avg_mini_batch_time = torch.tensor(mini_batch_times).mean().item()
         avg_io_time = torch.tensor(io_times).mean().item()
         total_io = torch.tensor(io_times).sum().item()
@@ -278,8 +286,8 @@ def train(epoch,criterion,optimizer,device,dataloader):
     average_loss = train_loss / len(dataloader)
     accuracy = correct / total
     print(f'Training Loss: {average_loss:.4f}, Accuracy: {100 * accuracy:.2f}%')
-    print(f"average mini batch time:{avg_mini_batch_time}, average I/O time: {avg_io_time}")
-    print(f"mini batch time:{total_mini_batch}, I/O time: {total_io}\n")
+    print(f"average mini batch time:{avg_mini_batch_time} sec, average I/O time: {avg_io_time} sec")
+    print(f"mini batch time:{total_mini_batch} sec, I/O time: {total_io} sec\n")
     global epoch_time
     epoch_time+= total_epoch
     global mini_batch_time 
@@ -287,28 +295,6 @@ def train(epoch,criterion,optimizer,device,dataloader):
     global io_time
     io_time += total_io 
     #return total_epoch,total_mini_batch,total_io
-def test(epoch):
-    global best_acc
-    resnet.eval()
-    test_loss = 0
-    correct = 0
-    total = 0
-    progress_bar = tqdm(testloader, desc=f'Testing for Epoch {epoch}', leave=False)
-    with torch.no_grad():
-        for batch_idx, (inputs, targets) in enumerate(progress_bar):#enumerate(testloader):
-            inputs, targets = inputs.to(device), targets.to(device)
-            outputs = resnet(inputs)
-            loss = criterion(outputs, targets)
-
-            test_loss += loss.item()
-            _, predicted = outputs.max(1)
-            total += targets.size(0)
-            correct += predicted.eq(targets).sum().item()
-            progress_bar.set_postfix(loss=test_loss / (batch_idx + 1), accuracy=100. * correct / total)
-
-    average_loss = test_loss / len(testloader)
-    accuracy = correct / total
-    print(f'Test Loss: {average_loss:.4f}, Accuracy: {100 * accuracy:.2f}%')
 
 def optimizer_selection(model, opt,lr ):
     opt = opt.lower()
@@ -335,21 +321,18 @@ def optimizer_selection(model, opt,lr ):
     return ret 
 
 
-def parameters_vs_gradients():
+def parameters_vs_gradients(model):
     print("Finding Gradients vs parameters")
-    param_count =[p for p in resnet.parameters()] #len(resnet.parameters())
-    grad_count = [p for p in resnet.parameters() if p.requires_grad]
+    param_count =[p for p in model.parameters()] #len(resnet.parameters())
+    grad_count = [p for p in model.parameters() if p.requires_grad]
     print(f"params: {len(param_count)}, grads: {len(grad_count)}")
-            
-    
+        
 epoch_time = 0
 mini_batch_time = 0
 io_time = 0
 if __name__ == "__main__":
     Main()
     ##################################
-    #TODO compute gradients vs params?
-    parameters_vs_gradients()
     ##################################
 
     '''transform_test = transforms.Compose([
