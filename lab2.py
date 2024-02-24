@@ -196,7 +196,7 @@ def Main():
             #io_time+= dummy3
     print(f"Total times for epoch: {epoch_time} sec, mini batch computations: {mini_batch_time} sec, IO: {io_time} sec")
     print(f"Average Epoch time:{epoch_time/5}")
-    print(f"Number of workers: {args.num_workers}")
+    print(f"Number of workers: {args.num_workers} sec")
     parameters_vs_gradients(model)
 def train(model,epoch,criterion,optimizer,device,dataloader):
     print('\nEpoch: %d' % epoch)
