@@ -68,7 +68,7 @@ class ResidualBlock(nn.Module):
         h = f+identity
         ###
         if self.c7 == False: 
-            ret =self.batchNorm(h)#self.batchNorm(self.relu(h))
+            h  =self.batchNorm(h)#self.batchNorm(self.relu(h))
         ret = self.relu(h) #self.relu(ret)#self.relu(h)
         return ret
 ##############################
