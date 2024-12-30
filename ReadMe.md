@@ -56,9 +56,10 @@ Train the model with a learning rate of 0.01 on a GPU using the Adam optimizer:
 Output
 The script will print the training loss and test accuracy for each epoch. Example output:
 
-Copy
+```
 Epoch 1, Train Loss: 1.2345, Test Accuracy: 0.5678
 Epoch 2, Train Loss: 1.1234, Test Accuracy: 0.6789
+```
 ...
 Notes
 Ensure the dataset is downloaded to the correct directory (./data by default).
