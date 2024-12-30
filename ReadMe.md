@@ -66,17 +66,4 @@ Experiment with different hyperparameters to observe their impact on performance
 
 If you encounter GPU memory issues, reduce the batch size or switch to the CPU.
 
-License
-This project is licensed under the MIT License. See the LICENSE file for details.
-
-Copy
-
-### **How to Use**:
-1. Copy the entire Markdown code above.
-2. Open a text editor (e.g., Notepad, VS Code, Sublime Text).
-3. Paste the copied content into the editor.
-4. Save the file as `README.md`.
-
-This will preserve the formatting exactly as I provided it. Let me know if you need further assistance! 😊
-New chat
 
