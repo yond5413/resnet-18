@@ -41,7 +41,7 @@ Run with Default Parameters
 Additional Files
 plotting.py: Generates figures for the report, such as training loss and test accuracy plots.```
 
-Example Commands
+## Example Commands
 Train the model with a learning rate of 0.01 on a GPU using the Adam optimizer:
 
 ```python lab2.py --lr 0.01 --device cuda --opt adam```
