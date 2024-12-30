@@ -40,14 +40,10 @@ plotting.py: Generates figures for the report, such as training loss and test ac
 Example Commands
 Train the model with a learning rate of 0.01 on a GPU using the Adam optimizer:
 
-bash
-Copy
-python lab2.py --lr 0.01 --device cuda --opt adam
-Train the model without batch normalization:
+```python lab2.py --lr 0.01 --device cuda --opt adam```
+## ***Train the model without batch normalization***:
 
-bash
-Copy
-python lab2.py --c7
+```python lab2.py --c7```
 Output
 The script will print the training loss and test accuracy for each epoch. Example output:
 
