@@ -33,13 +33,13 @@ Run with Default Parameters
 ---
 
 ## Project Structure
-lab2/
+```lab2/
 ├── lab2.py               # Main script for training and evaluation
 ├── plotting.py           # Script for generating figures
 ├── README.md             # Project documentation
 └── data/                 # Directory for storing the dataset (default)
 Additional Files
-plotting.py: Generates figures for the report, such as training loss and test accuracy plots.
+plotting.py: Generates figures for the report, such as training loss and test accuracy plots.```
 
 Example Commands
 Train the model with a learning rate of 0.01 on a GPU using the Adam optimizer:
