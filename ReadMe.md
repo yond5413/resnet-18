@@ -19,8 +19,8 @@ Run with Default Parameters
 ```python lab2.py```
 ## **Run with Custom Parameters**
 ```python lab2.py --lr 0.01 --device cuda --opt adam --c7```
-## **Parameters**
-## Parameters
+
+## **Parameters Desctiption**
 | Parameter      | Description                                                                 | Default Value | Options/Constraints                     |
 |----------------|-----------------------------------------------------------------------------|---------------|-----------------------------------------|
 | `--lr`         | Learning rate                                                               | 0.1           | Must be a float < 1                     |
