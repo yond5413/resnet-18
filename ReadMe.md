@@ -14,7 +14,7 @@ Install the required libraries using:
 pip install torch torchvision
 ```
 
-***Usage***
+**Usage**
 Run with Default Parameters
 ```python lab2.py```
 Run with Custom Parameters
