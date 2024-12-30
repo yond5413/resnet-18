@@ -20,15 +20,23 @@ Run with Default Parameters
 ## **Run with Custom Parameters**
 ```python lab2.py --lr 0.01 --device cuda --opt adam --c7```
 ## **Parameters**
-Parameter	Description	Default Value	Options/Constraints
---lr	Learning rate	0.1	Must be a float < 1
---device	Computing device	cpu	cpu, cuda
---num_workers	Number of I/O workers	2	Must be an integer
---data_path	Dataset download directory	./data	Path to directory
---opt	Optimizer selection	sgd	sgd, nesterov, adam, adagrad, adadelta
---c7	Disable batch normalization in ResNet-18	False	Set to True to disable batch normalization
-Project Structure
-Copy
+## Parameters
+| Parameter      | Description                                                                 | Default Value | Options/Constraints                     |
+|----------------|-----------------------------------------------------------------------------|---------------|-----------------------------------------|
+| `--lr`         | Learning rate                                                               | 0.1           | Must be a float < 1                     |
+| `--device`     | Computing device                                                            | `cpu`         | `cpu`, `cuda`                           |
+| `--num_workers`| Number of I/O workers                                                       | 2             | Must be an integer                      |
+| `--data_path`  | Dataset download directory                                                  | `./data`      | Path to directory                       |
+| `--opt`        | Optimizer selection                                                         | `sgd`         | `sgd`, `nesterov`, `adam`, `adagrad`, `adadelta` |
+| `--c7`         | Disable batch normalization in ResNet-18                                    | `False`       | Set to `True` to disable batch normalization |
+
+---
+
+## Project Structure
+
+
+
+
 lab2/
 ├── lab2.py               # Main script for training and evaluation
 ├── plotting.py           # Script for generating figures
