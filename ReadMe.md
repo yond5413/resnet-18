@@ -20,7 +20,9 @@ Run with Default Parameters
 python lab2.py
 ```
 ## **Run with Custom Parameters**
-```python lab2.py --lr 0.01 --device cuda --opt adam --c7```
+```
+python lab2.py --lr 0.01 --device cuda --opt adam --c7
+```
 
 ## **Parameters Desctiption**
 | Parameter      | Description                                                                 | Default Value | Options/Constraints                     |
