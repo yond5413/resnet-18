@@ -33,10 +33,6 @@ Run with Default Parameters
 ---
 
 ## Project Structure
-
-
-
-
 lab2/
 ├── lab2.py               # Main script for training and evaluation
 ├── plotting.py           # Script for generating figures
