@@ -60,8 +60,8 @@ The script will print the training loss and test accuracy for each epoch. Exampl
 Epoch 1, Train Loss: 1.2345, Test Accuracy: 0.5678
 Epoch 2, Train Loss: 1.1234, Test Accuracy: 0.6789
 ```
-...
-Notes
+
+## Notes
 Ensure the dataset is downloaded to the correct directory (./data by default).
 
 Experiment with different hyperparameters to observe their impact on performance.
