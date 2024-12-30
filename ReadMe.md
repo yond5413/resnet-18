@@ -11,5 +11,4 @@ This project implements a neural network using PyTorch and TorchVision. It inclu
 
 Install the required libraries using:
 ```bash
-pip install torch torchvision
-'''
+pip install torch torchvision```
